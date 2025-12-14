@@ -1,0 +1,39 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Síň slávy</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedDifficulty" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="easy">
+        <ion-label>Malá</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="medium">
+        <ion-label>Střední</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="hard">
+        <ion-label>Velká</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-list>
+    <ion-item *ngFor="let score of scores$ | async; let i = index">
+      <ion-avatar slot="start">
+        <div class="rank-circle">{{ i + 1 }}</div>
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ score.name }}</h2>
+        <p>{{ score.date | date:'shortDate' }} {{ score.date | date:'shortTime' }}</p>
+      </ion-label>
+      <ion-note slot="end" color="primary" style="font-size: 1.2em; font-weight: bold;">
+        {{ score.time }} s
+      </ion-note>
+    </ion-item>
+    
+    <div *ngIf="(scores$ | async)?.length === 0" class="ion-text-center ion-padding">
+      <p>Zatím žádné výsledky v této kategorii.</p>
+    </div>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,7 @@
+{
+  "name": "miny-hra",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

@@ -1,0 +1,63 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Hledání Min</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="startNewGame(currentDifficultyKey)">Reset</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="currentDifficultyKey" (ionChange)="startNewGame($any($event.detail.value))">
+      <ion-segment-button value="easy">
+        <ion-label>Malá</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="medium">
+        <ion-label>Střední</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="hard">
+        <ion-label>Velká</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-text-center">
+  
+  <div class="info-panel">
+    <h2>Čas: {{ seconds }} s</h2>
+    <p>Miny: {{ totalMines }}</p>
+  </div>
+
+  <div class="controls">
+    <ion-segment [(ngModel)]="flagMode" color="warning">
+      <ion-segment-button [value]="false">
+        <ion-label>⛏️ Kopat</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="true">
+        <ion-label>🚩 Vlajka</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <div class="game-container">
+    <div class="grid" 
+         [style.grid-template-columns]="'repeat(' + cols + ', 35px)'">
+      
+      <div *ngFor="let cell of grid; let i = index" 
+           class="cell" 
+           [class.revealed]="cell.isRevealed"
+           [class.mine]="cell.isRevealed && cell.isMine"
+           (click)="handleInteraction(i)"
+           (contextmenu)="toggleFlag(i); $event.preventDefault()"> <span *ngIf="!cell.isRevealed && cell.isFlagged">🚩</span>
+
+        <span *ngIf="cell.isRevealed && !cell.isMine && cell.neighborCount > 0"
+              [class.c1]="cell.neighborCount === 1"
+              [class.c2]="cell.neighborCount === 2"
+              [class.c3]="cell.neighborCount >= 3">
+          {{ cell.neighborCount }}
+        </span>
+        <span *ngIf="cell.isRevealed && cell.isMine">💣</span>
+      </div>
+    </div>
+  </div>
+</ion-content>

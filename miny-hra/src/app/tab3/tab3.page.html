@@ -1,0 +1,16 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Profil hráče</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Tvoje přezdívka</ion-label>
+    <ion-input [(ngModel)]="playerName" placeholder="Zadej jméno"></ion-input>
+  </ion-item>
+  <ion-button expand="block" (click)="saveName()">ULOŽIT JMÉNO</ion-button>
+  <p class="ion-text-center ion-padding-top">
+    Toto jméno se bude zobrazovat v online žebříčku.
+  </p>
+</ion-content>
