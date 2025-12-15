@@ -14,28 +14,36 @@ import { inject } from '@angular/core';
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class Tab2Page {
+  // Injektování služby Firestore pro přístup k databázi
   private firestore: Firestore = inject(Firestore);
   
+  // Observable stream - data se v aplikaci sama aktualizují, když se změní v databázi
   scores$: Observable<any[]> | undefined;
+  
+  // Výchozí zobrazení žebříčku
   selectedDifficulty = 'easy';
 
   constructor() {
     this.loadScores();
   }
 
+  // Funkce pro načtení a filtrování dat z Cloudu
   loadScores() {
     const scoresCollection = collection(this.firestore, 'scores');
     
+    // Sestavení databázového dotazu (Query):
     const q = query(
       scoresCollection, 
-      where('difficulty', '==', this.selectedDifficulty),
+      where('difficulty', '==', this.selectedDifficulty), 
       orderBy('time', 'asc'),
       limit(20)
     );
     
+    // collectionData propojí dotaz přímo s HTML šablonou
     this.scores$ = collectionData(q);
   }
 
+  // Volá se, když uživatel přepne záložku (Malá / Střední / Velká)
   segmentChanged(event: any) {
     this.selectedDifficulty = event.detail.value;
     this.loadScores();

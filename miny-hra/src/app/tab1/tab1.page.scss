@@ -1,3 +1,4 @@
+/* Panel zobrazující čas a počet min */
 .info-panel {
   padding: 10px;
   display: flex;
@@ -6,10 +7,12 @@
   font-size: 1.2rem;
 }
 
+/* Odsazení pro přepínač Vlajka/Kopání */
 .controls {
   padding: 0 20px 10px 20px;
 }
 
+/* Hlavní kontejner hry - umožňuje scrollování, pokud je mapa velká */
 .game-container {
   display: flex;
   justify-content: center;
@@ -17,6 +20,7 @@
   overflow: auto;
 }
 
+/* Mřížka herního pole */
 .grid {
   display: grid;
   gap: 2px;
@@ -25,6 +29,7 @@
   border-radius: 4px;
 }
 
+/* Styl jednoho políčka */
 .cell {
   width: 35px;
   height: 35px;
@@ -36,20 +41,24 @@
   cursor: pointer;
   border: 2px outset #fff;
 
+  /* Styl pro již odkryté políčko (ploché) */
   &.revealed {
     background-color: #eee;
     border: 1px solid #ccc;
   }
 
+  /* Styl pro minu (červené pozadí) */
   &.mine {
     background-color: red;
   }
 }
 
+/* Barvy čísel podle počtu sousedních min */
 .c1 { color: blue; }
 .c2 { color: green; }
 .c3 { color: red; }
 
+/* Animace "zatřesení" při výbuchu */
 @keyframes shake {
   0% { transform: translate(1px, 1px) rotate(0deg); }
   10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -64,12 +73,14 @@
   100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 
+/* Přiřazení animace k buňce s minou */
 .cell.mine {
   background-color: #ff4444;
   animation: shake 0.5s;
   border: 1px solid #cc0000;
 }
 
+/* Zabraňuje označování textu (emoji) při rychlém klikání */
 .cell span {
   font-size: 1.2rem;
   user-select: none;

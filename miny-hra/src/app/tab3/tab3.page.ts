@@ -13,16 +13,22 @@ import { CommonModule } from '@angular/common';
 })
 export class Tab3Page implements OnInit {
   playerName: string = '';
+  
+  // Klíč, pod kterým bude jméno uloženo v paměti zařízení
   private KEY = 'player_name';
 
   constructor() {}
 
   async ngOnInit() {
+    // Načtení uloženého jména z paměti
     const { value } = await Preferences.get({ key: this.KEY });
+    
     if (value) this.playerName = value;
   }
 
+  // Funkce volaná tlačítkem "Uložit"
   async saveName() {
+    // Zápis do paměti telefonu (data zůstanou i po vypnutí aplikace)
     await Preferences.set({ key: this.KEY, value: this.playerName });
     alert('Jméno uloženo!');
   }

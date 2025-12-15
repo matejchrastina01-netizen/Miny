@@ -6,13 +6,15 @@ import { Firestore, collection, addDoc } from '@angular/fire/firestore';
 import { inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+// Definice struktury jednoho políčka
 interface Cell {
-  isMine: boolean;
-  isRevealed: boolean;
-  isFlagged: boolean;
-  neighborCount: number;
+  isMine: boolean;      // Je to mina?
+  isRevealed: boolean;  // Je odkryté?
+  isFlagged: boolean;   // Má vlaječku?
+  neighborCount: number;// Počet min okolo
 }
 
+// Konfigurace obtížností (rozměry a počet min)
 const DIFFICULTIES = {
   easy: { rows: 8, cols: 8, mines: 10, label: 'Malá' },
   medium: { rows: 12, cols: 12, mines: 25, label: 'Střední' },
@@ -27,27 +29,30 @@ const DIFFICULTIES = {
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class Tab1Page implements OnDestroy {
-  private firestore: Firestore = inject(Firestore);
+  private firestore: Firestore = inject(Firestore); // Injektování Firebase služby
 
-  grid: Cell[] = [];
+  grid: Cell[] = []; // Hlavní herní pole
   
+  // Nastavení výchozí obtížnosti
   currentDifficultyKey: 'easy' | 'medium' | 'hard' = 'easy';
   rows = 8;
   cols = 8;
   totalMines = 10;
   
+  // Stavové proměnné hry
   gameOver = false;
   gameWon = false;
-  isFirstClick = true;
-  flagMode = false;
+  isFirstClick = true; // Pojistka pro bezpečný první klik
+  flagMode = false;    // Přepínač režimu "Vlajka"
   
   seconds = 0;
   timerInterval: any;
 
   constructor(private alertController: AlertController) {
-    this.startNewGame('easy');
+    this.startNewGame('easy'); // Spustí hru při startu
   }
 
+  // Funkce pro reset a nastavení nové hry
   startNewGame(difficultyKey: 'easy' | 'medium' | 'hard') {
     this.currentDifficultyKey = difficultyKey;
     const config = DIFFICULTIES[difficultyKey];
@@ -62,19 +67,23 @@ export class Tab1Page implements OnDestroy {
     this.isFirstClick = true;
     this.grid = [];
 
+    // Vytvoření prázdné mřížky (miny se generují až po kliknutí)
     for (let i = 0; i < this.rows * this.cols; i++) {
       this.grid.push({ isMine: false, isRevealed: false, isFlagged: false, neighborCount: 0 });
     }
   }
 
+  // Hlavní reakce na kliknutí uživatele
   handleInteraction(index: number) {
     if (this.gameOver || this.gameWon) return;
 
+    // Pokud je zapnutý režim vlajek
     if (this.flagMode) {
       this.toggleFlag(index);
       return;
     }
 
+    // Pokud je to první kliknutí, vygeneruj miny (aby nebyla mina pod prstem)
     if (this.isFirstClick) {
       this.generateMines(index);
       this.startTimer();
@@ -84,12 +93,14 @@ export class Tab1Page implements OnDestroy {
     this.reveal(index);
   }
 
+  // Přidání/odebrání vlaječky
   toggleFlag(index: number) {
     if (!this.grid[index].isRevealed) {
       this.grid[index].isFlagged = !this.grid[index].isFlagged;
     }
   }
 
+  // Rozmístění min (vynechá safeIndex - místo prvního kliku)
   generateMines(safeIndex: number) {
     let minesPlaced = 0;
     
@@ -101,6 +112,7 @@ export class Tab1Page implements OnDestroy {
       }
     }
 
+    // Spočítání čísel okolo min pro celou mřížku
     for (let i = 0; i < this.grid.length; i++) {
       if (!this.grid[i].isMine) {
         this.grid[i].neighborCount = this.countMinesAround(i);
@@ -108,6 +120,7 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
+  // Pomocná funkce pro výpočet min v okolí (osmisměrka)
   countMinesAround(index: number): number {
     const row = Math.floor(index / this.cols);
     const col = index % this.cols;
@@ -126,17 +139,20 @@ export class Tab1Page implements OnDestroy {
     return count;
   }
 
+  // Odkrytí políčka (rekurzivní Flood Fill logika)
   reveal(index: number) {
     if (this.grid[index].isFlagged || this.grid[index].isRevealed) return;
 
     this.grid[index].isRevealed = true;
 
     if (this.grid[index].isMine) {
+      // PROHRA
       this.gameOver = true;
       this.stopTimer();
       this.showAlert('Prohra 💥', 'Bouchl jsi na minu!');
       this.revealAll();
     } else {
+      // Pokud je to nula (prázdno), odkryj automaticky okolí
       if (this.grid[index].neighborCount === 0) {
         this.expandZero(index);
       }
@@ -144,6 +160,7 @@ export class Tab1Page implements OnDestroy {
     }
   }
 
+  // Rekurzivní funkce pro odkrývání prázdných oblastí
   expandZero(index: number) {
     const row = Math.floor(index / this.cols);
     const col = index % this.cols;
@@ -155,30 +172,33 @@ export class Tab1Page implements OnDestroy {
         if (newRow >= 0 && newRow < this.rows && newCol >= 0 && newCol < this.cols) {
           const newIndex = newRow * this.cols + newCol;
           if (!this.grid[newIndex].isRevealed && !this.grid[newIndex].isMine) {
-            this.reveal(newIndex);
+            this.reveal(newIndex); // Volá znovu reveal (rekurze)
           }
         }
       }
     }
   }
 
+  // Odkryje vše (při prohře)
   revealAll() {
     this.grid.forEach(c => {
       if (c.isMine) c.isRevealed = true;
     });
   }
 
+  // Kontrola vítězství (všechna bezpečná pole jsou odkryta)
   async checkWin() {
     const revealedCount = this.grid.filter(c => c.isRevealed).length;
     if (revealedCount === (this.rows * this.cols - this.totalMines)) {
       this.gameWon = true;
       this.gameOver = true;
       this.stopTimer();
-      await this.saveScoreToFirebase();
+      await this.saveScoreToFirebase(); // Uložení do cloudu
       this.showAlert('Výhra! 🎉', `Čas: ${this.seconds} sekund`);
     }
   }
 
+  // Časovač
   startTimer() {
     this.timerInterval = setInterval(() => {
       this.seconds++;
@@ -189,11 +209,14 @@ export class Tab1Page implements OnDestroy {
     if (this.timerInterval) clearInterval(this.timerInterval);
   }
 
+  // Úklid při opuštění stránky
   ngOnDestroy() {
     this.stopTimer();
   }
 
+  // Uložení výsledku do Firestore databáze
   async saveScoreToFirebase() {
+    // Načtení jména z paměti telefonu (Preferences)
     const { value } = await Preferences.get({ key: 'player_name' });
     const name = value || 'Neznámý hráč';
 
